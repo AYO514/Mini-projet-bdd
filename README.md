@@ -1,21 +1,26 @@
-# Mini-projet Bases de données 1 — Gestion d’événements de MMA
+# Mini-Projet Bases de Données 1 (Partie 2) : Gestion d'une Organisation d'Événements de MMA
 
 **Binôme :** Ayoub El Azzouzi et Chraf Eddine Guidouche
 
-## 1. Présentation
+## 1. Contexte du projet
 
-Ce projet consiste à concevoir une base de données relationnelle pour gérer une organisation d’événements de MMA. Elle permet de suivre les combattants, leurs performances et licences, les combats, les arbitres, les événements, la billetterie, les spectateurs, les médias et les sponsors.
+Ce projet a pour objectif de concevoir et développer une base de données relationnelle pour la gestion d'une organisation d'événements sportifs de MMA. Le système gère les combattants, leurs licences et performances, les combats, les arbitres, les événements, la billetterie, les spectateurs, les médias et le sponsoring.
 
 ## 2. Modèles de données
 
-Le modèle conceptuel des données (MCD) et le modèle logique des données (MLD) sont fournis dans le dépôt :
+Le MLD a été déduit du MCD élaboré dans la Partie 1 en appliquant les règles de transformation MERISE.
 
-- `mcd.png` — modèle conceptuel des données ;
-- `mld.png` — modèle logique des données.
+### 2.1 Modèle conceptuel de données (MCD)
 
-Les clés primaires sont indiquées par `PK` et les clés étrangères par `FK`.
+![Modèle conceptuel de données](mcd.png)
 
-### MLD
+### 2.2 Modèle logique de données (MLD)
+
+![Modèle logique de données](mld.png)
+
+### 2.3 Description du MLD
+
+Les clés primaires sont soulignées dans le diagramme. Dans la liste ci-dessous, `PK` désigne une clé primaire et `FK` une clé étrangère.
 
 - **organisation** (`ID_organisation` PK, Nom_organisation, Email_organisation)
 - **arbitre** (`ID_arbitre` PK, Nom_arbitre, Prénom_arbitre, Nationalité)
@@ -28,89 +33,67 @@ Les clés primaires sont indiquées par `PK` et les clés étrangères par `FK`.
 - **spectateur** (`Téléphone_spectateur` PK, Nom_spectateur, Prénom_spectateur, Email_spectateur)
 - **billet** (`ID_billet` PK, Catégorie_billet, Prix_billet, `ID_évènement` FK, `Téléphone_spectateur` FK, `ID_organisation` FK)
 - **sponsor** (`ID_Sponsor` PK, Nom_sponsor, Type_de_sponsoring, Montant_sponsoring, Début_contrat_sponsor, Fin_contrat_sponsor)
-- **participe** (`Combattant_ID` PK, FK ; `ID_combat` PK, FK)
-- **est_obligatoire** (`Numéro_Licence_Sportive` PK, FK ; `ID_combat` PK, FK)
-- **finance** (`ID_évènement` PK, FK ; `ID_Sponsor` PK, FK)
+- **participe** (`Combattant_ID` PK et FK, `ID_combat` PK et FK)
+- **est_obligatoire** (`Numéro_Licence_Sportive` PK et FK, `ID_combat` PK et FK)
+- **finance** (`ID_évènement` PK et FK, `ID_Sponsor` PK et FK)
 
 Les tables `participe`, `est_obligatoire` et `finance` représentent des associations plusieurs-à-plusieurs à l’aide de clés primaires composées.
 
-## 3. Modèle physique et scripts SQL
+## 3. Modèle physique de données (MPD)
 
-Le modèle physique est implémenté en SQL dans la base `mma_event_db`. Il comprend 14 tables, avec des clés primaires, des clés étrangères et des contraintes d’intégrité.
+Le MPD est implémenté en SQL dans la base `mma_event_db`.
 
-Les fichiers SQL s’exécutent dans cet ordre :
+### 3.1 Tables et contraintes d’intégrité
 
-1. `1_creation.sql` — création du schéma et des tables ;
-2. `2_contraintes.sql` — ajout des contraintes de validation ;
-3. `3_insertion.sql` — insertion des données de démonstration ;
-4. `4_interrogation.sql` — exécution des requêtes.
+| Table | Clé primaire | Clés étrangères | Intégrité référentielle |
+|---|---|---|---|
+| `organisation` | `ID_organisation` | Aucune | — |
+| `arbitre` | `ID_arbitre` | Aucune | — |
+| `combattant` | `Combattant_ID` | Aucune | — |
+| `licence` | `Numéro_Licence_Sportive` | `ID_organisation`, `Combattant_ID` | CASCADE / CASCADE |
+| `performance` | `ID_performance` | `Combattant_ID` | CASCADE / CASCADE |
+| `media` | `ID_media` | Aucune | — |
+| `combat` | `ID_combat` | `ID_arbitre` | SET NULL / CASCADE |
+| `évènement` | `ID_évènement` | `ID_media`, `ID_combat`, `ID_organisation` | SET NULL / CASCADE |
+| `spectateur` | `Téléphone_spectateur` | Aucune | — |
+| `billet` | `ID_billet` | `ID_évènement`, `Téléphone_spectateur`, `ID_organisation` | CASCADE / SET NULL |
+| `sponsor` | `ID_Sponsor` | Aucune | — |
+| `participe` | `Combattant_ID`, `ID_combat` | `Combattant_ID`, `ID_combat` | CASCADE / CASCADE |
+| `est_obligatoire` | `Numéro_Licence_Sportive`, `ID_combat` | `Numéro_Licence_Sportive`, `ID_combat` | CASCADE / CASCADE |
+| `finance` | `ID_évènement`, `ID_Sponsor` | `ID_évènement`, `ID_Sponsor` | CASCADE / CASCADE |
 
-Les scripts utilisent la syntaxe MySQL. Les données de démonstration servent à tester le schéma et les requêtes. Si elles ont été générées par une IA et que l’énoncé exige le prompt utilisé, celui-ci doit être ajouté au dépôt.
+### 3.2 Fichiers SQL
 
-> **Attention :** avant de réexécuter le script de création, vérifier s’il supprime les tables existantes. Conserver une copie des données à préserver.
+Les scripts sont à exécuter dans cet ordre :
 
-## 4. Contraintes d’intégrité
+1. `1_creation.sql` — crée le schéma et les 14 tables avec leurs clés et règles d’intégrité.
+2. `2_contraintes.sql` — ajoute les contraintes de validation métier, comme les règles sur le statut médical, le prix des billets et la cohérence des dates.
+3. `3_insertion.sql` — insère le jeu de données de démonstration.
+4. `4_interrogation.sql` — contient 20 requêtes d’exploitation SQL.
 
-Les contraintes ajoutées contrôlent notamment la validité de certaines valeurs et la cohérence des données, par exemple :
+Les scripts utilisent la syntaxe MySQL. Vérifier que la base `mma_event_db` existe avant leur exécution. Le script de création peut supprimer des tables existantes : sauvegarder les données à conserver avant de le relancer.
 
-- le statut médical et la catégorie de poids ;
-- le prix des billets et le montant du sponsoring ;
-- la cohérence des dates de licence et de contrat ;
-- les valeurs des statistiques de performance ;
-- les références entre les tables.
+## 4. Scénario d’utilisation
 
-Les règles de suppression et de mise à jour des clés étrangères sont définies dans les scripts SQL.
+Le système est conçu pour être utilisé principalement par deux rôles :
 
-## 5. Scénario d’utilisation
+1. **Le directeur sportif** analyse les performances des combattants, vérifie leur statut médical et leurs licences, prépare des affrontements selon les catégories de poids et désigne des arbitres.
+2. **Le responsable financier et marketing** suit la vente des billets et les revenus par événement, évalue les partenariats avec les sponsors et organise les droits de diffusion avec les médias.
 
-La base répond aux besoins de plusieurs rôles dans une organisation d’événements de MMA :
+## 5. Étude d’optimisation d’une requête
 
-- **Direction sportive :** consulter les performances, vérifier les licences et le statut médical, préparer les combats et suivre les arbitres.
-- **Gestion financière et marketing :** suivre la billetterie et les sponsors, et consulter les informations relatives aux événements et aux médias.
+### 5.1 Requête analysée — Q20
 
-## 6. Requêtes SQL
+La requête recherche les noms, prénoms et nombres de victoires des combattants français ayant plus de 10 victoires et possédant une licence enregistrée.
 
-Le fichier `4_interrogation.sql` contient 20 requêtes d’exploitation de la base. Elles couvrent notamment les filtres et tris, les agrégations, les jointures et les sous-requêtes.
-
-La requête Q20 recherche les nom, prénom et nombre de victoires des combattants français ayant plus de 10 victoires et disposant d’une licence enregistrée :
-
-    SELECT c.Nom_combattant, c.Prénom_combattant, p.Nombre_de_victoires
-    FROM combattant AS c
-    JOIN performance AS p
-      ON c.Combattant_ID = p.Combattant_ID
-    JOIN licence AS l
-      ON c.Combattant_ID = l.Combattant_ID
-    WHERE c.Nationalité = 'France'
-      AND p.Nombre_de_victoires > 10;
-
-## 7. Optimisation théorique de la requête Q20
-
-Une optimisation classique consiste à appliquer les filtres avant les jointures, afin de réduire les lignes qui participent à celles-ci :
-
-    π(Nom_combattant, Prénom_combattant, Nombre_de_victoires)
-    (
-      (σ(Nationalité = 'France')(combattant))
-      ⋈ performance
-      ⋈ licence
-    )
-    avec le filtre Nombre_de_victoires > 10 appliqué à performance
-
-Selon les cardinalités estimées, on suppose que :
-
-- `combattant` contient 1 000 lignes, dont 100 combattants français ;
-- `performance` contient 1 000 lignes, dont 200 combattants ayant plus de 10 victoires ;
-- `licence` contient 1 000 lignes.
-
-Ces chiffres sont des hypothèses pour illustrer le principe. Une estimation de 20 résultats supposerait notamment une répartition indépendante des critères et une correspondance adéquate entre les enregistrements. **Le nombre réel de résultats doit être vérifié avec les données chargées dans la base.**
-
-Pousser les filtres au plus près des tables peut réduire le volume intermédiaire des jointures. Cependant, les sommes de lignes proposées dans un calcul simplifié ne représentent pas le nombre réel d’opérations ou le coût exact d’exécution de MySQL. Pour analyser les performances, exécuter `EXPLAIN` sur la requête et commenter le plan obtenu sur l’installation utilisée.
-
-## 8. Vérifications avant la remise
-
-Avant de rendre le projet :
-
-- exécuter les quatre scripts SQL dans l’ordre ;
-- vérifier que le MLD correspond aux tables et aux relations du SQL ;
-- relever et commenter le plan réel de la requête Q20 ;
-- compléter les informations manquantes demandées dans l’énoncé.
-
+```sql
+SELECT c.Nom_combattant,
+       c.Prénom_combattant,
+       p.Nombre_de_victoires
+FROM combattant AS c
+JOIN performance AS p
+  ON c.Combattant_ID = p.Combattant_ID
+JOIN licence AS l
+  ON c.Combattant_ID = l.Combattant_ID
+WHERE c.Nationalité = 'France'
+  AND p.Nombre_de_victoires > 10;
