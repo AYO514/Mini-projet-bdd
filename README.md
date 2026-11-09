@@ -1,4 +1,4 @@
-# Mini-Projet Bases de Données 1 (Partie 2) : Gestion d'une Organisation d'Événements de MMA
+# Mini-Projet Bases de Données : Gestion d'une Organisation d'Événements de MMA
 
 **Binôme :** Ayoub El Azzouzi et Chraf Eddine Guidouche
 
