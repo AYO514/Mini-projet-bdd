@@ -1,92 +1,118 @@
-# Mini-Projet Bases de Données : Gestion d'une Organisation d'Événements de MMA
+# Mini-projet Bases de Données — Gestion d’événements de MMA
 
-**Binôme :** Ayoub El Azzouzi et Chraf Eddine Guidouche
+**Réalisé par :** Ayoub El Azzouzi et Chraf Eddine Guidouche
 
-## 1. Contexte du projet
+## Présentation du projet
 
-Ce projet a pour objectif de concevoir et développer une base de données relationnelle pour la gestion d'une organisation d'événements sportifs de MMA. Le système gère les combattants, leurs licences et performances, les combats, les arbitres, les événements, la billetterie, les spectateurs, les médias et le sponsoring.
+Ce projet couvre la conception et l’implémentation d’une base de données relationnelle destinée à la gestion d’événements de MMA.
 
-## 2. Modèles de données
+Il suit les étapes du projet de base de données : définition du besoin, modélisation conceptuelle (MCD), modélisation logique (MLD), création des tables, ajout des contraintes, insertion de données et interrogation de la base.
 
-Le MLD a été déduit du MCD élaboré dans la Partie 1 en appliquant les règles de transformation MERISE.
+Le système permet de gérer les organisations, combattants, licences sportives, performances, combats, arbitres, événements, médias, spectateurs, billets et sponsors.
 
-### 2.1 Modèle conceptuel de données (MCD)
+## Scénario d’utilisation
 
-![Modèle conceptuel de données](mcd.png)
+Une organisation prépare un événement de MMA. Elle enregistre les combattants et leurs licences, consulte leurs performances, programme les combats et leur attribue des arbitres. Elle associe également l’événement à un média et à des sponsors.
 
-### 2.2 Modèle logique de données (MLD)
+Pour la billetterie, elle enregistre les spectateurs et les billets liés aux événements. La base permet ensuite de consulter, par exemple, les performances des combattants, les combats arbitrés, les recettes des billets et les contributions des sponsors.
 
-![Modèle logique de données](mld.png)
+## Modélisation de la base
 
-### 2.3 Description du MLD
+### Modèle conceptuel des données (MCD)
 
-Les clés primaires sont soulignées dans le diagramme. Dans la liste ci-dessous, `PK` désigne une clé primaire et `FK` une clé étrangère.
+Le MCD présente les entités du domaine, leurs attributs et leurs associations. Il constitue le point de départ de la conception de la base.
 
-- **organisation** (`ID_organisation` PK, Nom_organisation, Email_organisation)
-- **arbitre** (`ID_arbitre` PK, Nom_arbitre, Prénom_arbitre, Nationalité)
-- **combattant** (`Combattant_ID` PK, Prénom_combattant, Nom_combattant, Date_de_naissance, Nationalité, Catégorie_de_poids, Statut_médical, Dernier_certificat_médical)
-- **licence** (`Numéro_Licence_Sportive` PK, Date_délivrance, Date_expiration, `ID_organisation` FK, `Combattant_ID` FK)
-- **performance** (`ID_performance` PK, Nombre_de_victoires, Nombre_de_défaites, Nombre_de_matchs_nuls, Nombre_de_victoires_par_ko, Nombre_de_victoires_par_soumission, `Combattant_ID` FK)
-- **media** (`ID_media` PK, Nom_media, Type_media)
-- **combat** (`ID_combat` PK, Résultat_combat, Durée_combat, Poids_autorisé, `ID_arbitre` FK)
-- **évènement** (`ID_évènement` PK, Nom_évènement, Date_évènement, Lieu_évènement, `ID_media` FK, `ID_combat` FK, `ID_organisation` FK)
-- **spectateur** (`Téléphone_spectateur` PK, Nom_spectateur, Prénom_spectateur, Email_spectateur)
-- **billet** (`ID_billet` PK, Catégorie_billet, Prix_billet, `ID_évènement` FK, `Téléphone_spectateur` FK, `ID_organisation` FK)
-- **sponsor** (`ID_Sponsor` PK, Nom_sponsor, Type_de_sponsoring, Montant_sponsoring, Début_contrat_sponsor, Fin_contrat_sponsor)
-- **participe** (`Combattant_ID` PK et FK, `ID_combat` PK et FK)
-- **est_obligatoire** (`Numéro_Licence_Sportive` PK et FK, `ID_combat` PK et FK)
-- **finance** (`ID_évènement` PK et FK, `ID_Sponsor` PK et FK)
+![Modèle conceptuel des données — MCD](mcd.png)
 
-Les tables `participe`, `est_obligatoire` et `finance` représentent des associations plusieurs-à-plusieurs à l’aide de clés primaires composées.
+### Modèle logique des données (MLD)
 
-## 3. Modèle physique de données (MPD)
+Le MLD traduit la modélisation conceptuelle en relations, clés primaires et clés étrangères.
 
-Le MPD est implémenté en SQL dans la base `mma_event_db`.
+![Modèle logique des données — MLD](mld.png)
 
-### 3.1 Tables et contraintes d’intégrité
+### Principales relations
 
-| Table | Clé primaire | Clés étrangères | Intégrité référentielle |
-|---|---|---|---|
-| `organisation` | `ID_organisation` | Aucune | — |
-| `arbitre` | `ID_arbitre` | Aucune | — |
-| `combattant` | `Combattant_ID` | Aucune | — |
-| `licence` | `Numéro_Licence_Sportive` | `ID_organisation`, `Combattant_ID` | CASCADE / CASCADE |
-| `performance` | `ID_performance` | `Combattant_ID` | CASCADE / CASCADE |
-| `media` | `ID_media` | Aucune | — |
-| `combat` | `ID_combat` | `ID_arbitre` | SET NULL / CASCADE |
-| `évènement` | `ID_évènement` | `ID_media`, `ID_combat`, `ID_organisation` | SET NULL / CASCADE |
-| `spectateur` | `Téléphone_spectateur` | Aucune | — |
-| `billet` | `ID_billet` | `ID_évènement`, `Téléphone_spectateur`, `ID_organisation` | CASCADE / SET NULL |
-| `sponsor` | `ID_Sponsor` | Aucune | — |
-| `participe` | `Combattant_ID`, `ID_combat` | `Combattant_ID`, `ID_combat` | CASCADE / CASCADE |
-| `est_obligatoire` | `Numéro_Licence_Sportive`, `ID_combat` | `Numéro_Licence_Sportive`, `ID_combat` | CASCADE / CASCADE |
-| `finance` | `ID_évènement`, `ID_Sponsor` | `ID_évènement`, `ID_Sponsor` | CASCADE / CASCADE |
+| Domaine | Tables | Rôle |
+|---|---|---|
+| Organisation sportive | `organisation`, `combattant`, `licence`, `performance` | Identifier les organisations et suivre les combattants, leurs licences et leurs résultats |
+| Déroulement sportif | `combat`, `arbitre`, `participe`, `est_obligatoire` | Décrire les combats, leurs arbitres, leurs participants et les licences associées |
+| Événements et diffusion | `évènement`, `media` | Planifier les événements et renseigner les médias |
+| Billetterie | `spectateur`, `billet` | Associer les billets aux événements et aux spectateurs |
+| Financement | `sponsor`, `finance` | Associer les sponsors aux événements |
 
-### 3.2 Fichiers SQL
+Les tables `participe`, `est_obligatoire` et `finance` représentent des associations au moyen de clés primaires composées.
 
-Les scripts sont à exécuter dans cet ordre :
+## Implémentation SQL
 
-1. `1_creation.sql` — crée le schéma et les 14 tables avec leurs clés et règles d’intégrité.
-2. `2_contraintes.sql` — ajoute les contraintes de validation métier, comme les règles sur le statut médical, le prix des billets et la cohérence des dates.
-3. `3_insertion.sql` — insère le jeu de données de démonstration.
-4. `4_interrogation.sql` — contient 20 requêtes d’exploitation SQL.
+La base est implémentée avec la syntaxe **MySQL**. Le script de création définit **14 tables**, leurs clés primaires et leurs clés étrangères. Le script suivant ajoute des contraintes de validation métier.
 
-Les scripts utilisent la syntaxe MySQL. Vérifier que la base `mma_event_db` existe avant leur exécution. Le script de création peut supprimer des tables existantes : sauvegarder les données à conserver avant de le relancer.
+| Fichier du dépôt | Contenu |
+|---|---|
+| `mcd.png` | Modèle conceptuel des données |
+| `mld.png` | Modèle logique des données |
+| `1_creation (2).sql` | Suppression éventuelle des tables existantes et création des 14 tables |
+| `2_contraintes.sql` | Ajout de contraintes de validation |
+| `3_insertion (1).sql` | Insertion des données de démonstration |
+| `4_interrogation.sql` | Vingt requêtes de consultation et d’analyse |
 
-## 4. Scénario d’utilisation
+Les contraintes portent notamment sur le statut médical, les catégories de poids, le prix des billets, les montants de sponsoring, la cohérence des dates, la durée des combats et les statistiques de performance. Les clés étrangères assurent les liens entre les tables.
 
-Le système est conçu pour être utilisé principalement par deux rôles :
+## Installation et exécution
 
-1. **Le directeur sportif** analyse les performances des combattants, vérifie leur statut médical et leurs licences, prépare des affrontements selon les catégories de poids et désigne des arbitres.
-2. **Le responsable financier et marketing** suit la vente des billets et les revenus par événement, évalue les partenariats avec les sponsors et organise les droits de diffusion avec les médias.
+### Prérequis
 
-## 5. Étude d’optimisation d’une requête
+- Un serveur MySQL compatible avec les instructions `CHECK` utilisées par les scripts.
+- Le client en ligne de commande `mysql`, ou un outil permettant d’exécuter des fichiers SQL.
+- Une connexion avec les droits nécessaires pour créer une base et des tables.
 
-### 5.1 Requête analysée — Q20
+### Créer la base
 
-La requête recherche les noms, prénoms et nombres de victoires des combattants français ayant plus de 10 victoires et possédant une licence enregistrée.
+Les scripts `2_contraintes.sql` et `3_insertion (1).sql` sélectionnent la base `mma` avec `USE mma;`. Créer cette base avant l’exécution :
 
-```sql
+~~~sql
+CREATE DATABASE IF NOT EXISTS mma
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+~~~
+
+### Exécuter les scripts
+
+Depuis le dossier du projet, lancer les fichiers dans cet ordre :
+
+~~~bash
+mysql -u root -p mma < "1_creation (2).sql"
+mysql -u root -p mma < "2_contraintes.sql"
+mysql -u root -p mma < "3_insertion (1).sql"
+mysql -u root -p mma < "4_interrogation.sql"
+~~~
+
+Remplacer `root` par votre utilisateur MySQL si nécessaire.
+
+**Attention :** `1_creation (2).sql` contient des instructions `DROP TABLE IF EXISTS`. Le relancer supprime les tables du projet et les données qu’elles contiennent. Le script d’insertion est destiné à être exécuté après la création des tables, pas plusieurs fois de suite sur les mêmes données.
+
+## Données de démonstration
+
+Le jeu de données de `3_insertion (1).sql` sert à illustrer le fonctionnement de la base et à tester les requêtes. Il comprend des exemples d’organisations, de combattants, de performances, de licences, de combats, d’événements, de spectateurs, de billets et de sponsors.
+
+Ces données sont des **données de démonstration** : elles ne constituent pas un registre sportif officiel.
+
+## Requêtes et exploitation
+
+`4_interrogation.sql` contient **20 requêtes**, réparties entre :
+
+- des sélections, filtres et tris ;
+- des calculs et agrégations avec `GROUP BY` et `HAVING` ;
+- des jointures entre tables ;
+- des sous-requêtes ;
+- une requête retenue pour l’étude de l’optimisation relationnelle.
+
+Ces requêtes permettent notamment de rechercher des combattants selon différents critères, de calculer des recettes de billetterie, d’étudier les performances sportives et de croiser les informations des événements avec celles des autres tables.
+
+## Étude d’optimisation : requête Q20
+
+Q20 recherche les combattants français ayant plus de dix victoires et une licence enregistrée :
+
+~~~sql
 SELECT c.Nom_combattant,
        c.Prénom_combattant,
        p.Nombre_de_victoires
@@ -97,3 +123,45 @@ JOIN licence AS l
   ON c.Combattant_ID = l.Combattant_ID
 WHERE c.Nationalité = 'France'
   AND p.Nombre_de_victoires > 10;
+~~~
+
+### Comparaison théorique des plans
+
+Un **plan naïf** joint d’abord les tables `combattant`, `performance` et `licence`, puis applique les filtres. Il peut ainsi produire et parcourir davantage de lignes intermédiaires.
+
+Un **plan optimisé** cherche à appliquer au plus tôt les conditions `Nationalité = 'France'` et `Nombre_de_victoires > 10`, avant de joindre les résultats filtrés. Cette transformation correspond à la **poussée des sélections** en algèbre relationnelle.
+
+Les calculs fondés sur des tables hypothétiques de 1 000 lignes illustrent cette idée, mais **ne décrivent pas le jeu de données réellement inséré** et ne mesurent pas le coût réel d’exécution. Le plan choisi par MySQL peut être examiné avec :
+
+~~~sql
+EXPLAIN
+SELECT c.Nom_combattant,
+       c.Prénom_combattant,
+       p.Nombre_de_victoires
+FROM combattant AS c
+JOIN performance AS p
+  ON c.Combattant_ID = p.Combattant_ID
+JOIN licence AS l
+  ON c.Combattant_ID = l.Combattant_ID
+WHERE c.Nationalité = 'France'
+  AND p.Nombre_de_victoires > 10;
+~~~
+
+L’analyse du résultat doit porter sur l’ordre d’accès aux tables, les index utilisés et les estimations de lignes. Aucun temps d’exécution ou gain de performance mesuré n’est affirmé sans exécution effective.
+
+## Correspondance entre les modèles et l’implémentation
+
+Les diagrammes documentent la conception du projet ; les scripts SQL décrivent son implémentation actuelle. Certaines différences doivent être prises en compte lors de la lecture des modèles :
+
+- le MLD illustré montre `ID_performance` dans `organisation`, tandis que le SQL relie directement `performance` à `combattant` et ne crée pas cette colonne dans `organisation` ;
+- le SQL contient des attributs supplémentaires pour plusieurs tables, notamment les noms d’organisations, d’arbitres et de médias ;
+- le SQL relie également `évènement` à `organisation`.
+
+Pour utiliser la base, **les tables réellement créées par `1_creation (2).sql` font référence**. Les diagrammes peuvent être mis à jour si une correspondance exacte entre conception et implémentation est exigée.
+
+## Limites du projet
+
+- Le projet fournit une base de données et des requêtes SQL, mais pas d’interface utilisateur.
+- Les données insérées servent aux démonstrations et aux tests.
+- Toutes les règles métier ne peuvent pas être garanties par les contraintes actuellement présentes ; par exemple, la base n’impose pas à elle seule exactement deux participants pour chaque combat.
+- Le plan d’exécution et les performances dépendent des données et de l’environnement MySQL utilisés.
